@@ -1,0 +1,7 @@
+{
+  "port": 8009,
+  "javaapiHost": "localhost",
+  "javaapiPort": 8080,
+
+  "dbURI": ""
+}
