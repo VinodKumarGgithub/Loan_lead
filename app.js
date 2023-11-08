@@ -10,7 +10,9 @@ var fs = require('fs'); //This module is used to handle file system methods
 var bodyParser = require('body-parser'); //Parse incoming request bodies in a middleware before your handlers
 var multer = require('multer'); //Multer is a node.js middleware for handling multipart/form-data, which is primarily used for uploading files.
 var compress = require('compression'); //The middleware will attempt to compress response bodies for all request that traverse through the middleware, based on the given options
+var cors = require('cors')
 var helmet = require('helmet'); //Helmet helps you secure your Express apps by setting various HTTP headers
+var db = require('./config/db'); // Including database configuration
 
 var winston = require('winston'); //A multi-transport async logging library for node.js.
 var morgan = require('morgan'); //HTTP request logger middleware for node.js
@@ -22,8 +24,10 @@ var app = express(); // Initializing express
 app.disable('x-powered-by');
 app.disable('server');
 
-app.use(multer().none());
+// app.use(multer());
 app.use(helmet());
+app.use(cors());
+
 // app.use(require('method-override')('_method')); //Lets you use HTTP verbs such as PUT or DELETE in places where the client doesn't support it
 var parseForm = bodyParser.urlencoded({ extended: true, limit: '50mb' });
 
@@ -54,8 +58,18 @@ fs.readdirSync('./controllers').forEach(function (file) {
     }
 });
 
+
 // Sync the database
-// db.sync();
+(async () => {
+    try {
+      await db.sync();
+      console.log('All models were synchronized successfully.');
+  
+      // After synchronization, the new table should be created in the database
+    } catch (error) {
+      console.error('Error synchronizing models:', error);
+    }
+  })();
 
 var server = app.listen(port);
 

@@ -3,5 +3,5 @@
   "javaapiHost": "localhost",
   "javaapiPort": 8080,
 
-  "dbURI": ""
+  "dbURI": "mysql://root:1234@localhost:3306/loan_lead"
 }
