@@ -19,6 +19,12 @@ const Lead = sequelize.define('chef_leads', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  loan_amount: {
+    type: DataTypes.STRING
+  },
+  loan_type:{
+    type: DataTypes.STRING
+  },
   emp_id: {
     type: DataTypes.INTEGER
   },

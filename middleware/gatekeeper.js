@@ -12,7 +12,7 @@ const moment = require("moment-timezone");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const secretKey = "your_secret_key";
+const secretKey = "3e$9LpQ@2zUxR#7sG*vA!5hT&8nY1mXo";
 /**
  * NPM Modules
  */

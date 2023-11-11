@@ -9,6 +9,12 @@ const Leads = db.define('Lead_Logs', {
     type: Sequelize.INTEGER,
     allowNull: true
   },
+  loan_amount: {
+    type: Sequelize.STRING
+  },
+  loan_type:{
+    type: Sequelize.STRING
+  },
   isAssigned: {
     type: Sequelize.INTEGER,
     defaultValue: 0

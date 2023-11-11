@@ -9,12 +9,20 @@ const async = require("async"); // Async is a module which is used for callback 
 var utils = require("../Utilities/utils"); // Including utils.js file from utillities directory. utils.js include various helper functions such as formating date etc
 var XLSX = require("xlsx"); //This module is used to parser and writer for various spreadsheet formats.
 var multer = require("multer");
+const Sequelize = require('sequelize');
 const upload = multer({ dest: "uploads/" });
 
 const gatekeeper = require("../middleware/gatekeeper");
+
+// database models
 const Chef_user = require("../models/CHEF_ApiKeyModel");
 const Chef_admin = require("../models/CHEF_AdminModel");
 const CHEF_Leads = require("../models/CHEF_LeadsModel");
+const leads_logs = require("../models/Lead_LogsModel");
+const helper = require('../middleware/helper')
+const db = require("../config/db")
+
+
 module.exports.controller = (app) => {
   app.post("/api/payers/login", gatekeeper.token, (req, res) => {
     let admin = req.body.adminid;
@@ -143,7 +151,7 @@ module.exports.controller = (app) => {
             res.setHeader("Response-Description", err.error);
             res.status(err.code).end();
           } else {
-            res.status(200).send(`Admin #2, jwt : ${req.token}`);
+            res.status(200).send(`jwt : ${req.token}`);
           }
         }
       );
@@ -190,7 +198,7 @@ module.exports.controller = (app) => {
               {
                 where: {
                   adminid: adminid,
-                  password: pass,
+                  email: email
                 },
               },
               (err, repo) => {
@@ -207,9 +215,7 @@ module.exports.controller = (app) => {
                     .then((user) => {
                       console.log("User created Succefully");
                       res.status(201).json({
-                        message: "User created Succefully",
-                        username: req.body.adminid,
-                        password: req.body.password,
+                        message: "User created Succefully"
                       });
                       res.end();
                     })
@@ -292,15 +298,25 @@ module.exports.controller = (app) => {
               LeadsList.push(newLead);
             }
             console.log("info", "Saving leads from file");
-            CHEF_Leads.bulkCreate(LeadsList)
+            
+            CHEF_Leads.bulkCreate(LeadsList, {
+              ignoreDuplicates: true, // This option tells Sequelize to ignore duplicate entries
+            })
               .then(() => {
                 console.log("info", "Leads saved successfully");
                 res.status(200).send("Leads saved successfully");
               })
               .catch((error) => {
-                console.log("error", "Error saving leads: ", error);
-                res.status(500).send("Error saving leads");
+                if (error instanceof Sequelize.UniqueConstraintError) {
+                  console.log("info", "Some leads were not saved due to duplicates");
+                  res.status(200).send("Some leads were not saved due to duplicates");
+                } else {
+                  console.log("error", "Error saving leads: ", error);
+                  res.status(500).send("Error saving leads");
+                }
               });
+
+              
           } else {
             console.log("error", "Invalid File Format");
             res.status(400).send("errors: Invalid File Format");
@@ -342,7 +358,8 @@ module.exports.controller = (app) => {
 
   app.get("/leads/emp/:empid", gatekeeper.verifyToken, (req, res) => {
     let id = req.params.empid;
-    CHEF_Leads.findAllLeadByEmpId({
+    console.log("info", id);
+    CHEF_Leads.findAllLeadByQuery({
       where :{
         emp_id : id
       }
@@ -357,4 +374,9 @@ module.exports.controller = (app) => {
       }
     });
   });
+
+  app.post("/leads/emp/:empid",gatekeeper.verifyToken, utils.addEmpIdMiddleware, helper.saveLeadsAndLogsMiddleware, (req, res) => {
+    res.status(200).send("Leads and lead logs saved successfully");
+  });
 };
+

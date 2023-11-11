@@ -697,3 +697,32 @@ module.exports.truncate20 = function truncate20(value) {
     return value;
   }
 };
+
+module.exports.addEmpIdMiddleware = (req, res, next) => {
+  const { body: { leads} } = req;
+  const empid = req.params.empid || req.body.empid;
+
+  if (!leads || !Array.isArray(leads) || leads.length === 0) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Empty or invalid leads array received',
+    });
+  }
+
+  if (!empid || empid.trim() === '' || empid === ":empid") {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Employee Id is required',
+    });
+  }
+
+  // Modify leads objects in place
+  for (const lead of leads) {
+    lead.EMPID = empid;
+    lead.isAssigned = 1;
+  }
+
+  next();
+};
+
+

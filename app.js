@@ -62,7 +62,7 @@ fs.readdirSync('./controllers').forEach(function (file) {
 // Sync the database
 (async () => {
     try {
-      await db.sync();
+      await db.sync({alter: true});
       console.log('All models were synchronized successfully.');
   
       // After synchronization, the new table should be created in the database
