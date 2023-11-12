@@ -1,7 +1,8 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db'); // Import your Sequelize instance
 
-const Lead = sequelize.define('chef_leads', {
+const Lead = sequelize.define('chef_leads',
+ {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -17,7 +18,8 @@ const Lead = sequelize.define('chef_leads', {
   },
   phone_number: {
     type: DataTypes.STRING,
-    allowNull: true
+    allowNull: false,
+    unique:true
   },
   loan_amount: {
     type: DataTypes.STRING
@@ -41,6 +43,14 @@ const Lead = sequelize.define('chef_leads', {
     defaultValue: DataTypes.NOW,
     onUpdate: DataTypes.NOW
   }
+},
+{
+  indexes: [
+    {
+      unique: true,
+      fields: ['phone_number']
+    }
+  ]
 });
 
 module.exports = Lead;
@@ -115,3 +125,8 @@ module.exports.findAllLeadByQuery = function (query, callback) {
 };
 
 
+sequelize.sync().then((res)=>{
+    console.log('synced chef leads');
+}).catch((err)=>{
+    console.log('error', err);
+})

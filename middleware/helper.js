@@ -10,31 +10,64 @@ const db = require("../config/db")
 module.exports.saveLeadsAndLogsMiddleware = async (req, res, next) => {
   const { leads } = req.body;
   const empid = req.params.empid || req.body.empid;
-
+  let duplicateEntry = []
   try {
     // Start a transaction to ensure atomicity
+
     await db.transaction(async (t) => {
-      // Step 1: Bulk insert/update in the main table (CHEF_Leads)
-      const createdLeads = await CHEF_Leads.bulkCreate(leads, {
-        updateOnDuplicate: ['name', 'gender', 'phone_number', 'emp_id', 'isAssigned', 'loan_amount', 'loan_type'],
-        transaction: t,
-      });
+    
+        // Step 2: Fetch leads from CHEF_Leads where isAssigned is 0
+        const leadsToUpdate = await CHEF_Leads.findAll({
+          where: {
+            id: leads,
+            [db.Sequelize.Op.or]: [
+              { isAssigned: 0 }, // Update leads with isAssigned = 0
+              { isAssigned: { [db.Sequelize.Op.eq]: null } }, // Update leads with isAssigned = null
+              {
+                isAssigned: 1,
+                emp_id: { [db.Sequelize.Op.ne]: empid } // Exclude leads with isAssigned = 1 and the same emp_id
+              }
+            ]
+          },
+          transaction: t,
+        });
 
-      // Step 2: Create lead logs for each created lead
-      const leadLogs = createdLeads.map((lead) => {
-        return {
-          lead_id: lead.id,
-          emp_id: lead.emp_id,
-          isAssigned: lead.isAssigned,
-          remarks: '', // Add remarks as needed
-          loan_amount:lead.loan_amount,
-          loan_type:lead.loan_type
-        };
-      });
+        // Step 3: Update isAssigned to 1 for the fetched leads
+        const updatedLeads = await CHEF_Leads.update(
+          { isAssigned: 1,emp_id: empid },
+          {
+            where: {
+              id: leads,
+            },
+            transaction: t,
+          }
+        );
+    
+        // Step 4: Create lead logs for the updated leads
+        const leadLogs = leadsToUpdate.map((lead) => {
+          leads.includes(lead.id) === false ? duplicateEntry.push(lead.id) : null;
+          return {
+            lead_id: lead.id,
+            emp_id: empid,
+            isAssigned: 1,
+            remarks: '', // Add remarks as needed
+            loan_amount: lead.loan_amount,
+            loan_type: lead.loan_type,
+          };
+        });
 
-      // Bulk insert in the lead_logs table
-      await leads_logs.bulkCreate(leadLogs, { transaction: t });
-    });
+        let status = leadsToUpdate.length === leads.length ? "SuccessFull" : leadsToUpdate.length === 0 ? "Failed" : "Partially Updated"
+    req.result = {
+      status: status,
+      already_Assigned: leadsToUpdate.length === 0 ? leads : duplicateEntry,
+      leads_updated: updatedLeads[0]
+    }
+    
+        // Step 5: Bulk insert in the lead_logs table
+        await leads_logs.bulkCreate(leadLogs, { transaction: t });
+
+      });
+    
 
     console.log("info", "Leads and lead logs saved successfully");
     next(); // Continue to the next middleware or route handler

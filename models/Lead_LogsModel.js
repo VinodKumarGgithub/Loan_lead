@@ -4,6 +4,7 @@ var db = require("../config/db"); // Import your Sequelize instance
 const Leads = db.define('Lead_Logs', {
   lead_id: {
     type: Sequelize.INTEGER,
+    allowNull: false
   },
   emp_id: {
     type: Sequelize.INTEGER,
@@ -107,3 +108,8 @@ module.exports.findAllLeadByQuery = function (query, callback) {
 };
 
 
+db.sync().then((res)=>{
+    console.log('synced leads logs');
+}).catch((err)=>{
+    console.log('error', err);
+})

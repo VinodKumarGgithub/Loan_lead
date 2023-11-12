@@ -15,6 +15,7 @@ var ApiKeys = db.define(
     },
     email: {
       type: Sequelize.STRING(500),
+
     },
     apikey: {
       type: Sequelize.STRING,
@@ -95,7 +96,12 @@ var ApiKeys = db.define(
     },
   },
   {
-    // Other model options
+    indexes: [
+      {
+        unique: true,
+        fields: ['adminid','password']
+      }
+    ]
   }
 );
 

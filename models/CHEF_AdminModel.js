@@ -6,7 +6,8 @@
 var Sequelize = require('sequelize');
 var db = require('../config/db');
 
-var Admin = db.define('CHEF_Admins', {
+var Admin = db.define('CHEF_Admins',
+ {
 
     adminid: {
         type: Sequelize.STRING(500),
@@ -64,6 +65,14 @@ var Admin = db.define('CHEF_Admins', {
         type: Sequelize.STRING
     }
 
+},
+{
+  indexes: [
+    {
+      unique: true,
+      fields: ['adminid','password']
+    }
+  ]
 });
 
 module.exports = Admin;

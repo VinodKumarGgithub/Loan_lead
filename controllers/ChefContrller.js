@@ -268,7 +268,7 @@ module.exports.controller = (app) => {
           var worksheet = workbook.Sheets[first_sheet_name];
           var data = XLSX.utils.sheet_to_json(worksheet);
 
-          var formatArray = ["NAME", "PHONE_NUMBER", "GENDER"];
+          var formatArray = ["NAME", "PHONE_NUMBER", "GENDER","EMPLOYEE_ID","LOAN_AMOUNT", "LOAN_TYPE"];
 
           var headers = XLSX.utils.sheet_to_json(worksheet, {
             header: 1,
@@ -295,6 +295,15 @@ module.exports.controller = (app) => {
               newLead.gender = data[index]["GENDER"]
                 ? data[index]["GENDER"]
                 : "";
+              newLead.emp_id = data[index]["EMPLOYEE_ID"]
+                ? data[index]["EMPLOYEE_ID"]
+                : "";
+              newLead.loan_amount = data[index]["LOAN_AMOUNT"]
+                ? data[index]["LOAN_AMOUNT"]
+                : "";
+              newLead.loan_type = data[index]["LOAN_TYPE"]
+                ? data[index]["LOAN_TYPE"]
+                : "";
               LeadsList.push(newLead);
             }
             console.log("info", "Saving leads from file");
@@ -302,19 +311,22 @@ module.exports.controller = (app) => {
             CHEF_Leads.bulkCreate(LeadsList, {
               ignoreDuplicates: true, // This option tells Sequelize to ignore duplicate entries
             })
-              .then(() => {
-                console.log("info", "Leads saved successfully");
-                res.status(200).send("Leads saved successfully");
+              .then((result) => {
+                const savedLeadsCount = result.length;
+                if (savedLeadsCount > 0) {
+                  console.log("info", `${savedLeadsCount} leads saved successfully`);
+                  res.status(200).send(`${savedLeadsCount} leads saved successfully`);
+                } else {
+                  const errorMessage = "No new leads to save or all leads are duplicates";
+                  console.log("info", errorMessage);
+                  res.status(204).send(errorMessage);
+                }
               })
               .catch((error) => {
-                if (error instanceof Sequelize.UniqueConstraintError) {
-                  console.log("info", "Some leads were not saved due to duplicates");
-                  res.status(200).send("Some leads were not saved due to duplicates");
-                } else {
-                  console.log("error", "Error saving leads: ", error);
-                  res.status(500).send("Error saving leads");
-                }
+                console.log("error", "Error saving leads: ", error);
+                res.status(500).send("Error saving leads");
               });
+            
 
               
           } else {
@@ -376,7 +388,7 @@ module.exports.controller = (app) => {
   });
 
   app.post("/leads/emp/:empid",gatekeeper.verifyToken, utils.addEmpIdMiddleware, helper.saveLeadsAndLogsMiddleware, (req, res) => {
-    res.status(200).send("Leads and lead logs saved successfully");
+    res.status(200).send(req?.result || "Leads and lead logs saved successfully");
   });
 };
 
