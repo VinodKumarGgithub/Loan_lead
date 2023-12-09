@@ -124,9 +124,3 @@ module.exports.findAllLeadByQuery = function (query, callback) {
 
 };
 
-
-sequelize.sync().then((res)=>{
-    console.log('synced chef leads');
-}).catch((err)=>{
-    console.log('error', err);
-})

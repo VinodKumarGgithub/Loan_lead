@@ -108,8 +108,3 @@ module.exports.findAllLeadByQuery = function (query, callback) {
 };
 
 
-db.sync().then((res)=>{
-    console.log('synced leads logs');
-}).catch((err)=>{
-    console.log('error', err);
-})
