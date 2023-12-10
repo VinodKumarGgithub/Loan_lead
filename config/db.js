@@ -11,6 +11,7 @@ console.log("debug", dbURI);
 var db = new Sequelize(dbURI, {
   // disable logging; default: console.log
   logging: false,
+  timezone: '+05:30',
   dialectOptions: {
     charset: "utf8",
     collate: "utf8_general_ci",

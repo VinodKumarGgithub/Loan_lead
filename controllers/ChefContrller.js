@@ -10,6 +10,7 @@ var utils = require("../Utilities/utils"); // Including utils.js file from utill
 var XLSX = require("xlsx"); //This module is used to parser and writer for various spreadsheet formats.
 var multer = require("multer");
 const Sequelize = require('sequelize');
+const moment = require('moment-timezone');
 const upload = multer({ dest: "uploads/" });
 
 const gatekeeper = require("../middleware/gatekeeper");
@@ -88,7 +89,7 @@ module.exports.controller = (app) => {
             res.setHeader("Response-Description", err.error);
             res.status(err.code).end();
           } else {
-            res.status(200).send({ "jwt" : `${req.token}`});
+            res.status(200).send({message:'user login succesfully', "jwt" : `${req.token}`,'role':userType});
           }
         }
       );
@@ -151,7 +152,7 @@ module.exports.controller = (app) => {
             res.setHeader("Response-Description", err.error);
             res.status(err.code).end();
           } else {
-            res.status(200).send(`jwt : ${req.token}`);
+            res.status(200).send({message:'admin login succesfully', "jwt" : `${req.token}`,'role':userType});
           }
         }
       );
@@ -247,7 +248,7 @@ module.exports.controller = (app) => {
       }
     );
   });
-
+// upload multiple lead with the help of excel
   app.post("/leads/imports",
     gatekeeper.verifyToken,
     gatekeeper.isAdminCheck,
@@ -343,6 +344,121 @@ module.exports.controller = (app) => {
     }
   );
 
+  // upload all lead
+  app.post(
+    "/leads",
+    gatekeeper.verifyToken,
+    gatekeeper.isAdminCheck,
+    async (req, res) => {
+      try {
+        if (!req.body || !Array.isArray(req.body)) {
+          return res.status(400).send("Invalid leads array");
+        }
+  
+        const invalidLeads = [];
+        const validLeads = req.body.filter((lead, index) => {
+          const missingFields = [];
+  
+          // Define required fields
+          const requiredFields = ["name", "gender", "phone_number","loan_amount","loan_type", "status"];
+  
+          requiredFields.forEach((field) => {
+            if (!lead[field]) {
+              missingFields.push(field);
+            }
+          });
+  
+          if (missingFields.length > 0) {
+            invalidLeads.push({ index, error: `Missing fields: ${missingFields.join(", ")}` });
+            return false;
+          }
+  
+          return true;
+        });
+  
+        const result = await CHEF_Leads.bulkCreate(validLeads, {
+          ignoreDuplicates: true,
+        });
+  
+        const savedLeadsCount = result.length;
+  
+        if (savedLeadsCount > 0) {
+          console.log("info", `${savedLeadsCount} leads saved successfully`);
+          const response = {
+            message: `${savedLeadsCount} leads saved successfully`,
+            invalidLeads: invalidLeads,
+          };
+          res.status(200).json(response);
+        } else {
+          const errorMessage =
+            "No new leads to save or all leads are duplicates";
+          console.log("info", errorMessage);
+          const response = {
+            message: errorMessage,
+            invalidLeads: invalidLeads,
+          };
+          res.status(204).json(response);
+        }
+      } catch (error) {
+        console.log("error", "Error processing leads: ", error);
+        res.status(500).send("Error processing leads");
+      }
+    }
+  );
+  
+  // update status or remark
+  app.put(
+    "/leads/:id",
+    gatekeeper.verifyToken,
+    gatekeeper.isAdminCheck,
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const { status, remark } = req.body;
+  
+        if (!status && !remark) {
+          return res.status(400).send("Either status or remark should be provided");
+        }
+  
+        const lead = await CHEF_Leads.findByPk(id);
+  
+        if (!lead) {
+          return res.status(404).send("Lead not found");
+        }
+  
+        // Update the status and/or remark if provided
+        if (status !== undefined) {
+          lead.status = status;
+        }
+  
+        if (remark !== undefined) {
+          // Explicitly set the 'changed' flag for the 'remark' field
+          // lead.setDataValue('remark', lead.getDataValue('remark'));
+          lead.changed('remark', true);
+  
+          // Assuming remark is an array field in the database
+          const existingRemarks = lead.remark || [];
+  
+          // Append the new remark to the array
+          existingRemarks.push({
+            message: remark,
+            time: moment().tz('Asia/Kolkata').format(),
+          });
+  
+          lead.remark = existingRemarks;
+        }
+  
+        await lead.save();
+  
+        console.log("info", "Lead updated successfully");
+        res.status(200).send("Lead updated successfully");
+      } catch (error) {
+        console.log("error", "Error updating lead: ", error);
+        res.status(500).send("Error updating lead");
+      }
+    }
+  );
+
   app.get("/leads", gatekeeper.verifyToken, (req, res) => {
     CHEF_Leads.findAllLeadByQuery({},(err, result) => {
       if (!err) {
@@ -367,6 +483,28 @@ module.exports.controller = (app) => {
       }
     });
   });
+
+  // get a single employee
+  app.get("/emp/:id", gatekeeper.verifyToken, async (req, res) => {
+    try {
+      const id = req.params.id;
+      const employee = await Chef_user.findByPk(id);
+  
+      if (employee) {
+        console.log("info", "Employee retrieved successfully");
+        res.status(200).send(employee.toJSON());
+      } else {
+        console.log("info", "Employee not found");
+        res.status(404).send("Employee not found");
+      }
+    } catch (error) {
+      console.log("error", "Error fetching employee: ", error);
+      res.status(500).send("Error fetching employee");
+    }
+  });
+  
+
+
 
   app.get("/leads/emp/:empid", gatekeeper.verifyToken, (req, res) => {
     let id = req.params.empid;

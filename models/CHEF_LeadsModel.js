@@ -34,6 +34,14 @@ const Lead = sequelize.define('chef_leads',
     type: DataTypes.INTEGER,
     defaultValue: 0
   },
+  remark: {
+    type: DataTypes.JSON,
+  },
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: 'INSERTED',
+  },
+
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW

@@ -20,8 +20,12 @@ const Leads = db.define('Lead_Logs', {
     type: Sequelize.INTEGER,
     defaultValue: 0
   },
-  remarks: {
+  remark: {
+    type: Sequelize.JSON,
+  },
+  status: {
     type: Sequelize.STRING,
+    defaultValue: 'INSERTED',
   },
   createdAt: {
     type: Sequelize.DATE,
