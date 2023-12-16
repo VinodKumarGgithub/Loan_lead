@@ -215,8 +215,10 @@ module.exports.controller = (app) => {
               Chef_user.findOneApiKeyByQuery(
                 {
                   where: {
-                    adminid: adminid,
-                    email: email,
+                    [Op.or]: [
+                      { adminid: adminid },
+                      { email: email },
+                    ],
                   },
                 },
                 (err, repo) => {
@@ -339,8 +341,9 @@ module.exports.controller = (app) => {
               ignoreDuplicates: true, // This option tells Sequelize to ignore duplicate entries
             })
               .then((result) => {
-                const savedLeadsCount = result.length;
-                if (savedLeadsCount > 0) {
+                const newRecordsArray = result.filter(chefLead => chefLead.isNewRecord);
+                const savedLeadsCount = newRecordsArray.length;
+                if (savedLeadsCount > 0) { console.log(result)
                   console.log(
                     "info",
                     `${savedLeadsCount} leads saved successfully`
