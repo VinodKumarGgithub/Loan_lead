@@ -159,7 +159,8 @@ module.exports.token = (req, res, next) => {
   const adminid = req.body.adminid;
   const currentTime = moment().tz("Asia/Kolkata");
 
-  if (!adminid.includes('@')) {
+  // if (!adminid.includes('@')) {
+    if (true) {
     let expiresIn = '7h'; // Set expiration to 7 hours for non-email admin IDs
     generateToken(expiresIn, req, res, next);
   } else if (isWithinTimeRange(currentTime)) {

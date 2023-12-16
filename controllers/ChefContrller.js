@@ -31,6 +31,8 @@ module.exports.controller = (app) => {
     let user = admin.includes("@");
 
     let userType = user ? "USER" : "ADMIN";
+    let adminid = req.body.adminid;
+    let id = "";
 
     // if normal user
     if (user) {
@@ -59,6 +61,7 @@ module.exports.controller = (app) => {
                 async (err, repo) => {
                   if (!err) {
                     let comparepass;
+                    id = repo.id;
                     try {
                       comparepass = await gatekeeper.comparehash(pass, repo.password);
                       console.log('res', comparepass);
@@ -90,7 +93,7 @@ module.exports.controller = (app) => {
             res.setHeader("Response-Description", err.error);
             res.status(err.code).end();
           } else {
-            res.status(200).send({message:'user login succesfully', "jwt" : `${req.token}`,'role':userType});
+            res.status(200).send({message:'user login succesfully', "jwt" : `${req.token}`, 'user':{ id, adminid, 'role':userType}});
           }
         }
       );
@@ -121,6 +124,7 @@ module.exports.controller = (app) => {
                   if (!err) {
                     console.log(pass,repo.password);
                     let comparepass;
+                    id = repo.id;
                     try {
                       comparepass = await gatekeeper.comparehash(pass, repo.password);
                       console.log('res', comparepass);
@@ -153,7 +157,7 @@ module.exports.controller = (app) => {
             res.setHeader("Response-Description", err.error);
             res.status(err.code).end();
           } else {
-            res.status(200).send({message:'admin login succesfully', "jwt" : `${req.token}`,'role':userType});
+            res.status(200).send({message:'admin login succesfully', "jwt" : `${req.token}`, 'user':{ id, adminid, 'role':userType,}});
           }
         }
       );
