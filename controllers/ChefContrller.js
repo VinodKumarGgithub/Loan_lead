@@ -2,6 +2,7 @@
  * Core helping Modules
  */
 const crypto = require("crypto"); // Crypto is used for implementing hashing and encrypting algorithms
+const fs = require('fs');
 
 const config = require("../config/config"); // Including configuration file from config directory. Configuration file included depends on which NODE_ENV application is running on
 const async = require("async"); // Async is a module which is used for callback handling of Nodejs functions. we can use async to run respective functions parallel or in series
@@ -271,9 +272,9 @@ module.exports.controller = (app) => {
   // upload multiple lead with the help of excel
   app.post(
     "/leads/imports",
+    upload.single("file"),
     gatekeeper.verifyToken,
     gatekeeper.isAdminCheck,
-    upload.single("file"),
     (req, res, next) => {
       console.log("info", "authenticated entered main code", req.file);
 
@@ -341,13 +342,20 @@ module.exports.controller = (app) => {
               ignoreDuplicates: true, // This option tells Sequelize to ignore duplicate entries
             })
               .then((result) => {
-                const newRecordsArray = result.filter(chefLead => chefLead.isNewRecord);
+                const newRecordsArray = []
+                result.forEach(chefLead => {
+                  if(chefLead.isNewRecord ===true ){
+                    newRecordsArray.push(newRecordsArray)
+                  }
+                });
+                console.log(newRecordsArray)
                 const savedLeadsCount = newRecordsArray.length;
-                if (savedLeadsCount > 0) { console.log(result)
+                if (savedLeadsCount > 0) { 
                   console.log(
                     "info",
                     `${savedLeadsCount} leads saved successfully`
                   );
+                  fs.unlinkSync(req.file.path);
                   res
                     .status(200)
                     .send(`${savedLeadsCount} leads saved successfully`);
@@ -355,6 +363,7 @@ module.exports.controller = (app) => {
                   const errorMessage =
                     "No new leads to save or all leads are duplicates";
                   console.log("info", errorMessage);
+                  fs.unlinkSync(req.file.path);
                   res.status(204).send(errorMessage);
                 }
               })
@@ -368,6 +377,7 @@ module.exports.controller = (app) => {
           }
         } catch (e) {
           console.log("error", "Something wrong with leads file: ", e);
+          fs.unlinkSync(req.file.path);
           res
             .status(400)
             .send("errors: Uploaded file is corrupt, please fix and try again");
