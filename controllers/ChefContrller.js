@@ -342,14 +342,7 @@ module.exports.controller = (app) => {
               ignoreDuplicates: true, // This option tells Sequelize to ignore duplicate entries
             })
               .then((result) => {
-                const newRecordsArray = []
-                result.forEach(chefLead => {
-                  if(chefLead.isNewRecord ===true ){
-                    newRecordsArray.push(newRecordsArray)
-                  }
-                });
-                console.log(newRecordsArray)
-                const savedLeadsCount = newRecordsArray.length;
+                const savedLeadsCount = result.length;
                 if (savedLeadsCount > 0) { 
                   console.log(
                     "info",
