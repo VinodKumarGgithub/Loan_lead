@@ -10,6 +10,7 @@ var utils = require("../utilities/utils"); // Including utils.js file from utill
 var XLSX = require("xlsx"); //This module is used to parser and writer for various spreadsheet formats.
 var multer = require("multer");
 const Sequelize = require('sequelize');
+const { Op } = require('sequelize');
 const moment = require('moment-timezone');
 const upload = multer({ dest: "uploads/" });
 
@@ -485,9 +486,9 @@ module.exports.controller = (app) => {
   });
 
   // get a single employee
-  app.get("/emp/:id", gatekeeper.verifyToken, async (req, res) => {
+  app.get("/emp", gatekeeper.verifyToken, async (req, res) => {
     try {
-      const id = req.params.id;
+      const id = req.query.empid; console.log('id :',req.body)
       const employee = await Chef_user.findByPk(id);
   
       if (employee) {
@@ -502,9 +503,36 @@ module.exports.controller = (app) => {
       res.status(500).send("Error fetching employee");
     }
   });
+
+   // get a employee-list
+  app.get("/all-employees",
+   gatekeeper.verifyToken, 
+   gatekeeper.isAdminCheck, async (req, res) => {
+    let keyword = req.query.query  || "";
+    try {
+      const employees = await Chef_user.findAll({
+        where : {
+          [Op.or]: [
+            { id: { [Op.like]: '%' + keyword + '%' } },
+            { email: { [Op.like]: '%' + keyword + '%' } },
+            { adminid: { [Op.like]: '%' + keyword + '%' } },
+        ],
+        },
+      });
   
-
-
+      if (employees) {
+        console.log("info", "Employees retrieved successfully"); console.log(employees)
+        res.status(200).send(employees);
+      } else {
+        console.log("info", "Employees not found");
+        res.status(404).send("Employees not found");
+      }
+    } catch (error) {
+      console.log("error", "Error fetching employees: ", error);
+      res.status(500).send("Error fetching employees");
+    }
+  });
+  
 
   app.get("/leads/emp/:empid", gatekeeper.verifyToken, (req, res) => {
     let id = req.params.empid;

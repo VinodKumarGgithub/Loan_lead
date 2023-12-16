@@ -3,6 +3,7 @@
  */
 var CHEF_ApiKeyModel = require("../models/CHEF_ApiKeyModel");
 var Chef_admin = require("../models/CHEF_AdminModel.js");
+let Chef_user = require("../models/CHEF_ApiKeyModel.js")
 
 /**
  * Core helping Modules
@@ -209,7 +210,7 @@ module.exports.verifyToken = (req, res, next) => {
     return res.status(403).json({ message: "Token not provided" });
   }
   console.log("verifyToken", req.headers.authorization);
-  jwt.verify(token, secretKey, (err, decoded) => {
+  jwt.verify(token, secretKey, async(err, decoded) => {
     if (err) {
       console.log("error", err);
       return res.status(401).json({ message: "Failed to authenticate token" });
@@ -217,6 +218,11 @@ module.exports.verifyToken = (req, res, next) => {
     // If token is valid, save the decoded information to the request object for use in other routes
     req.decoded = decoded.adminid;
     console.log('info',decoded.adminid);
+    if(req.decoded.includes("@")){
+      let userRepo= await Chef_user.findOne({where:{adminid: req.decoded}});
+      req.query.empid = userRepo.id
+    } 
+
     next();
   });
 };
