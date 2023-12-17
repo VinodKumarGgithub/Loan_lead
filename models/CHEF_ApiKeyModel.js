@@ -115,7 +115,7 @@ module.exports.findOneAdminIdByAdminId = function (adminid, callback) {
       if (repo) {
         callback(null, repo);
       } else {
-        callback({ error: "Adminid Not found", code: 404 }, repo);
+        callback({ error: "Adminid Not found", code: 200 }, repo);
       }
       return null;
     })
@@ -140,7 +140,7 @@ module.exports.findAllApiKeysByEnterpriseId = function (
       if (rows.length > 0) {
         callback(null, rows);
       } else {
-        callback({ error: "ApiKeys Not found", code: 404 }, rows);
+        callback({ error: "ApiKeys Not found", code: 200 }, rows);
       }
       return null;
     })
@@ -159,7 +159,7 @@ module.exports.findOneApiKeyByQuery = function (query, callback) {
       if (repo) {
         callback(null, repo);
       } else {
-        callback({ error: "ApiKey not found in the system.", code: 404 }, repo);
+        callback({ error: "ApiKey not found in the system.", code: 200 }, repo);
       }
       return null;
     })
@@ -178,7 +178,7 @@ module.exports.findAllApiKeysByQuery = function (query, callback) {
       if (rows.length > 0) {
         callback(null, rows);
       } else {
-        callback({ error: "ApiKeys Not found", code: 404 }, rows);
+        callback({ error: "ApiKeys Not found", code: 200 }, rows);
       }
       return null;
     })

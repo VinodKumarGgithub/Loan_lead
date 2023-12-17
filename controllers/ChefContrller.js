@@ -470,7 +470,7 @@ module.exports.controller = (app) => {
         const lead = await CHEF_Leads.findByPk(id);
 
         if (!lead) {
-          return res.status(404).send("Lead not found");
+          return res.status(200).send("Lead not found");
         }
 
         // Update the status and/or remark if provided
@@ -516,7 +516,7 @@ module.exports.controller = (app) => {
           res.status(200).send(result);
           console.log("info", "leads got successfully");
         } else {
-          res.status(404).send(err);
+          res.status(200).send(err);
           console.log("error", err);
         }
       });
@@ -530,7 +530,7 @@ module.exports.controller = (app) => {
         res.status(200).send(result);
         console.log("info", "leads got successfully");
       } else {
-        res.status(404).send(err);
+        res.status(200).send(err);
         console.log("error", err);
       }
     });
@@ -548,7 +548,7 @@ module.exports.controller = (app) => {
         res.status(200).send(employee.toJSON());
       } else {
         console.log("info", "Employee not found");
-        res.status(404).send("Employee not found");
+        res.status(200).send("Employee not found");
       }
     } catch (error) {
       console.log("error", "Error fetching employee: ", error);
@@ -580,7 +580,7 @@ module.exports.controller = (app) => {
           res.status(200).send(employees);
         } else {
           console.log("info", "Employees not found");
-          res.status(404).send("Employees not found");
+          res.status(200).send("Employees not found");
         }
       } catch (error) {
         console.log("error", "Error fetching employees: ", error);

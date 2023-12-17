@@ -85,7 +85,7 @@ module.exports.findOneAdminIdByAdminId = function (adminid, callback) {
             callback(null, repo);
         }
         else {
-            callback({error: 'Admin Not found', code: 404}, repo);
+            callback({error: 'Admin Not found', code: 200}, repo);
         }
         return null;
     }).catch(function (err) {
@@ -104,7 +104,7 @@ module.exports.findAllAdminByEnterpriseId = function (enterpriseid, callback) {
             callback(null, rows);
         }
         else {
-            callback({error: 'Admin Not found', code: 404}, rows);
+            callback({error: 'Admin Not found', code: 200}, rows);
         }
         return null;
     }).catch(function (err) {
@@ -120,7 +120,7 @@ module.exports.findOneApiKeyByQuery = function (query, callback) {
             callback(null, repo);
         }
         else {
-            callback({error: 'Admin not found in the system.', code: 404}, repo);
+            callback({error: 'Admin not found in the system.', code: 200}, repo);
         }
         return null;
     }).catch(function (err) {
@@ -135,7 +135,7 @@ module.exports.findAllAdminByQuery = function (query, callback) {
             callback(null, rows);
         }
         else {
-            callback({error: 'Admin Not found', code: 404}, rows);
+            callback({error: 'Admin Not found', code: 200}, rows);
         }
         return null;
     }).catch(function (err) {

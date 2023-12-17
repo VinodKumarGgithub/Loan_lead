@@ -72,7 +72,7 @@ module.exports.findOneIDbyID = function (id, callback) {
             callback(null, repo);
         }
         else {
-            callback({error: 'Lead Not found', code: 404}, repo);
+            callback({error: 'Lead Not found', code: 200}, repo);
         }
         return null;
     }).catch(function (err) {
@@ -91,7 +91,7 @@ module.exports.findAllLeadByEmpId = function (emp_id, callback) {
             callback(null, rows);
         }
         else {
-            callback({error: 'Lead Not found', code: 404}, rows);
+            callback({error: 'Lead Not found', code: 200}, rows);
         }
         return null;
     }).catch(function (err) {
@@ -107,7 +107,7 @@ module.exports.findOneLeadsByQuery = function (query, callback) {
             callback(null, repo);
         }
         else {
-            callback({error: 'Lead not found in the system.', code: 404}, repo);
+            callback({error: 'Lead not found in the system.', code: 200}, repo);
         }
         return null;
     }).catch(function (err) {
@@ -122,7 +122,7 @@ module.exports.findAllLeadByQuery = function (query, callback) {
             callback(null, rows);
         }
         else {
-            callback({error: 'Lead Not found', code: 404}, rows);
+            callback({error: 'Lead Not found', code: 200}, rows);
         }
         return null;
     }).catch(function (err) {
