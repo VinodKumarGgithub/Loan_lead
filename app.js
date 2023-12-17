@@ -26,7 +26,15 @@ app.disable('server');
 
 // app.use(multer());
 app.use(helmet());
-app.use(cors());
+
+const corsOptions = {
+  origin: 'https://loan-lead-management.vercel.app',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 
 // app.use(require('method-override')('_method')); //Lets you use HTTP verbs such as PUT or DELETE in places where the client doesn't support it
 var parseForm = bodyParser.urlencoded({ extended: true, limit: '50mb' });
