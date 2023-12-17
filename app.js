@@ -6,6 +6,7 @@
 
 var express = require('express'); // Express.js is a Nodejs Frame work used for web services
 var path = require('path'); //The path module provides utilities for working with file and directory paths
+const https = require('https');
 var fs = require('fs'); //This module is used to handle file system methods
 var bodyParser = require('body-parser'); //Parse incoming request bodies in a middleware before your handlers
 var multer = require('multer'); //Multer is a node.js middleware for handling multipart/form-data, which is primarily used for uploading files.
@@ -23,6 +24,10 @@ var app = express(); // Initializing express
 
 app.disable('x-powered-by');
 app.disable('server');
+
+const privateKey = fs.readFileSync('key.pem', 'utf8');
+const certificate = fs.readFileSync('cert.pem', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
 
 // app.use(multer());
 app.use(helmet());
@@ -71,7 +76,10 @@ fs.readdirSync('./controllers').forEach(function (file) {
     }
   })();
 
-var server = app.listen(port);
+const httpsServer = https.createServer(credentials, app);
+var server = httpsServer.listen(443,()=>{
+  console.log(`server running on 443`)
+});
 
 server.timeout = 600000;
 console.log('server started on port ' + port);
